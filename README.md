@@ -1,5 +1,3 @@
-![Concentric Sky](https://concentricsky.com/media/uploads/images/csky_logo.jpg)
-
 ## Django Tastypie Swagger
 
 **django-tastypie-swagger** is a small adapter library to construct [Swagger](http://swagger.wordnik.com/) documentation from [Tastypie](https://django-tastypie.readthedocs.org) resources.
@@ -17,7 +15,6 @@ This package provides two things:
 - [Getting Started](#getting-started)
 - [Contributors](#contributors)
 - [License](#license)
-- [About Concentric Sky](#about-concentric-sky)
 
 
 ## Version History
@@ -109,8 +106,3 @@ Contributors to this project are listed in the CONTRIBUTORS.md file. If you cont
 ## License
 
 This project is licensed under the Apache License, Version 2.0. Details can be found in the LICENSE.md file. License for third-party code is available in 3RDPARTYLICENSES.md.
-
-
-## About Concentric Sky
-
-_For nearly a decade, Concentric Sky has been building technology solutions that impact people everywhere. We work in the mobile, enterprise and web application spaces. Our team, based in Eugene Oregon, loves to solve complex problems. Concentric Sky believes in contributing back to our community and one of the ways we do that is by open sourcing our code on GitHub. Contact Concentric Sky at hello@concentricsky.com._
