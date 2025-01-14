@@ -1,10 +1,10 @@
-## Django Tastypie Swagger
+## Django Tastypie Redoc
 
-**django-tastypie-swagger** is a small adapter library to construct [Swagger](http://swagger.wordnik.com/) documentation from [Tastypie](https://django-tastypie.readthedocs.org) resources.
+**django-tastypie-swagger** is a small adapter library to construct [Redoc](http://swagger.wordnik.com/) documentation from [Tastypie](https://django-tastypie.readthedocs.org) resources.
 
 This package provides two things:
 
-1. An embedded instance of [Swagger UI](https://github.com/wordnik/swagger-ui) to point a URL to.
+1. An embedded instance of [Redoc UI](https://github.com/wordnik/swagger-ui) to point a URL to.
 2. Automatic [Resource Listing](https://github.com/wordnik/swagger-core/wiki/Resource-Listing) and [API Declaration](https://github.com/wordnik/swagger-core/wiki/API-Declaration) generation that is consumed by #1
 
 
@@ -67,17 +67,17 @@ eg::
 
 To declare more than one endpoint, repeat the above URL definition and change the namespace.
 
-Swagger documentation will be served up at the URL(s) you configured.
+Redoc documentation will be served up at the URL(s) you configured.
 
-### Swagger V1 v.s. V2
+### Redoc V1 v.s. V2
 
-The following URI are according to Swagger Spec 1.2:
+The following URI are according to Redoc Spec 1.2:
 
 	* `/resources/`
 	* `/schema/`
 	* `/schema/<resource_name>`
 	
-The Swagger Spec V2.0 compliant `swagger.json` is served at the following URLs.
+The Redoc Spec V2.0 compliant `swagger.json` is served at the following URLs.
 Both URLs return the same content. 
 
 	* `/specs/` 
