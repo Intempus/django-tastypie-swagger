@@ -2,13 +2,110 @@
 <!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>Intempus API</title>
-  </head>
+<head>
+    <meta charset="utf-8"> <!-- Important: rapi-doc uses utf8 characters -->
+    <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+    <title>Intempus Api</title>
+</head>
+<body>
+<rapi-doc
+    show-header = "false"
+    spec-url = "{{swagger_url}}"
+    layout ="row"
+    theme ="dark"
+    render-style = "read"
+> </rapi-doc>
+</body>
+<script>
+    window.onload = function () {
+        if (screen.size < 768) {
+            return;
+        }
+        const rapiDocElement = document.querySelector('rapi-doc');
+        if (rapiDocElement) {
+            const shadowRoot = rapiDocElement.shadowRoot;
+            if (shadowRoot) {
+                // Set up a MutationObserver to watch for added nodes inside the shadow root
+                const containerObserver = new MutationObserver((mutationsList) => {
+                    mutationsList.forEach(mutation => {
+                        if (mutation.type === 'childList') {
+                            mutation.addedNodes.forEach(node => {
+                                // Recursively check if the added node contains expanded-req-resp-container
+                                if (node.nodeType === 1) { // Only process element nodes
+                                    const expandedContainers = node.querySelectorAll('.expanded-req-resp-container');
+                                    expandedContainers.forEach(container => {
+                                        modifyRequestResponse(container);
+                                    });
 
-  <body>
-    <redoc spec-url="{{ swagger_url }}"></redoc>
-    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"> </script>
-  </body>
+                                    // If the added node has its own shadow DOM, observe it as well
+                                    if (node.shadowRoot) {
+                                        observeDeepShadowDOM(node.shadowRoot);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                });
+
+                // Start observing the shadow root for child additions and changes
+                containerObserver.observe(shadowRoot, {
+                    childList: true,
+                    subtree: true,
+                });
+
+                // Function to recursively observe deeper shadow roots
+                function observeDeepShadowDOM(shadowRoot) {
+                    const deepObserver = new MutationObserver((mutationsList) => {
+                        mutationsList.forEach(mutation => {
+                            if (mutation.type === 'childList') {
+                                mutation.addedNodes.forEach(node => {
+                                    if (node.nodeType === 1) { // Only process element nodes
+                                        const expandedContainers = node.querySelectorAll('.expanded-req-resp-container');
+                                        expandedContainers.forEach(container => {
+                                            modifyRequestResponse(container);
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    });
+
+                    // Observe the deeper shadow root for additions
+                    deepObserver.observe(shadowRoot, {
+                        childList: true,
+                        subtree: true,
+                    });
+                }
+            }
+        }
+
+        // Function to modify the .expanded-req-resp-container
+        function modifyRequestResponse(container) {
+            const apiRequest = container.querySelector('api-request');
+            const apiResponse = container.querySelector('api-response');
+
+            if (apiRequest && apiResponse) {
+                // Create the spans for request and response
+                const requestSpan = document.createElement('span');
+                const responseSpan = document.createElement('span');
+
+                // Set display and width
+                requestSpan.style.display = 'inline-block';
+                requestSpan.style.width = '50%';
+                requestSpan.style.marginRight = '15px';
+
+                responseSpan.style.display = 'inline-block';
+                responseSpan.style.width = '48%';
+
+                requestSpan.appendChild(apiRequest);
+                responseSpan.appendChild(apiResponse);
+
+                container.innerHTML = '';
+                container.appendChild(requestSpan);
+                container.appendChild(responseSpan);
+            }
+        }
+    };
+
+</script>
 </html>
