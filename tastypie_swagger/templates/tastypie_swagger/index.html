@@ -4,31 +4,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Swagger UI</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'tastypie_swagger/swagger-ui.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'tastypie_swagger/index.css' %}" />
-    <link rel="icon" type="image/png" href="{% static 'favicon-32x32.png' %}" sizes="32x32" />
-    <link rel="icon" type="image/png" href="{% static 'favicon-16x16.png' %}" sizes="16x16" />
+    <title>Intempus API</title>
   </head>
 
   <body>
-    <div id="swagger-ui"></div>
-    <script src="{% static 'tastypie_swagger/swagger-ui-bundle.js' %}" charset="UTF-8"> </script>
-    <script src="{% static 'tastypie_swagger/swagger-ui-standalone-preset.' %}js" charset="UTF-8"> </script>
-
-    <script>
-    window.onload = () => {
-      window.ui = SwaggerUIBundle({
-        url: "{{ swagger_url }}",
-        dom_id: '#swagger-ui',
-        presets: [
-          SwaggerUIBundle.presets.apis,
-          SwaggerUIStandalonePreset
-        ],
-        layout: "StandaloneLayout",
-        withCredentials: true,
-      });
-    };
-   </script>
+    <redoc spec-url="{{ swagger_url }}"></redoc>
+    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"> </script>
   </body>
 </html>
