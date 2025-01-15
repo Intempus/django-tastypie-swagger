@@ -80,6 +80,7 @@ class ResourceSwagger2Mapping(ResourceSwaggerMapping):
         for api in apis:
             uri = api.get('path').replace(common_path, '/')
             tag_name = uri.replace('/', '').split('{')[0]
+            tag_name = ' '.join([i.title() for i in tag_name.split('_')])
             tag = {
                 "name": tag_name,
             }
