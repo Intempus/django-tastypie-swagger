@@ -9,13 +9,40 @@
 </head>
 <body>
 <rapi-doc
-    show-header = "false"
-    spec-url = "{{swagger_url}}"
-    layout ="row"
-    theme ="dark"
-    render-style = "read"
+        show-header = "false"
+        spec-url = "{{swagger_url}}"
+        layout ="row"
+        theme ="dark"
+        render-style = "read"
 > </rapi-doc>
 </body>
+<script>
+    function waitForRapiDoc() {
+        const checkInterval = setInterval(() => {
+            const rapiDocElement = document.querySelector('rapi-doc');
+            if (rapiDocElement) {
+                clearInterval(checkInterval);
+                rapiDocElement.addEventListener('before-try', (e) => {
+                    addApiKeyToHeader(e);
+                });
+            }
+        }, 100);
+    }
+    waitForRapiDoc();
+    function addApiKeyToHeader(e) {
+        const rapiDocElement = document.querySelector('rapi-doc');
+        const shadowRoot = rapiDocElement.shadowRoot;
+        const apiKeyInput = shadowRoot.getElementById('apiKey-ApiKeyAuth-api-key-input');
+        const originalFetch = window.fetch;
+        window.fetch = async (url, options = {}) => {
+            if (!options.headers) {
+                options.headers = {};
+            }
+            options.headers['Authorization'] = apiKeyInput.value;
+            return originalFetch(url, options);
+        };
+    }
+</script>
 <script>
     window.onload = function () {
         if (screen.size < 768) {
@@ -106,6 +133,5 @@
             }
         }
     };
-
 </script>
 </html>

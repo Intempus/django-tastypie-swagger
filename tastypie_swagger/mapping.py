@@ -6,6 +6,7 @@ try:
     from django.utils.encoding import force_text
 except ImportError:
     from django.utils.encoding import force_str as force_text
+from django.utils.translation import override
 
 from tastypie import fields
 from .utils import trailing_slash_or_none, urljoin_forced
@@ -81,15 +82,16 @@ class ResourceSwaggerMapping(object):
         If the resource is not a ModelResource, use either
         ``resource_name`` or ``resource_name_plural``.
         """
-        qs = self.resource._meta.queryset
-        if qs is not None and hasattr(qs, 'model'):
-            meta = qs.model._meta
-            verbose_name = meta.verbose_name_plural if plural else meta.verbose_name
-            return verbose_name.lower()
+        with override('en'):
+            qs = self.resource._meta.queryset
+            if qs is not None and hasattr(qs, 'model'):
+                meta = qs.model._meta
+                verbose_name = meta.verbose_name_plural if plural else meta.verbose_name
+                return verbose_name.lower()
 
-        if plural and getattr(self.resource._meta, 'resource_name_plural', ""):
-            return self.resource._meta.resource_name_plural
-        return self.resource_name
+            if plural and getattr(self.resource._meta, 'resource_name_plural', ""):
+                return self.resource._meta.resource_name_plural
+            return self.resource_name
 
     def get_operation_summary(self, detail=True, method='get'):
         """
