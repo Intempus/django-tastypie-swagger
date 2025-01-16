@@ -14,9 +14,56 @@
         layout ="row"
         theme ="dark"
         render-style = "read"
-> </rapi-doc>
+>
+    <div slot="overview">{{ api_overview|safe }}</div>
+</rapi-doc>
 </body>
 <script>
+    // This script is used to handle the navigation when the user clicks on the headers
+    // Add click event to all headers (h1, h2, h3)
+    document.querySelectorAll('h1, h2, h3').forEach(header => {
+        header.addEventListener('click', function() {
+            const sectionId = this.id;
+            if (!sectionId) {
+                return;
+            }
+
+            // Update the URL with the clicked header's ID (without reloading the page)
+            history.pushState(null, '', `#${sectionId}`);
+
+            // Scroll to the clicked section smoothly
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    // Optionally: Handle navigation when the page loads with an existing URL hash
+    window.addEventListener('load', () => {
+        if (window.location.hash) {
+            const targetId = window.location.hash.slice(1); // Remove the "#" symbol
+            if (targetId !== null){
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
+    });
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            if (window.location.hash) {
+                const targetId = window.location.hash.slice(1); // Remove the "#" symbol
+                if (targetId !== null) {
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            }
+        }, 500); // Delay the execution by 100 milliseconds
+    });
+</script>
+<script>
+
     function waitForRapiDoc() {
         const checkInterval = setInterval(() => {
             const rapiDocElement = document.querySelector('rapi-doc');
