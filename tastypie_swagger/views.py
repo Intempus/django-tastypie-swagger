@@ -104,9 +104,18 @@ class SwaggerView(TastypieApiMixin, TemplateView):
                     .rstrip('/'))
         context.update({
             'discovery_url': f'{basePath}/resources',
-            'swagger_url': f'{basePath}/specs/swagger.json'
+            'swagger_url': f'{basePath}/specs/swagger.json',
+            'api_overview': self._render_markdown_file(),
         })
         return context
+
+    @staticmethod
+    def _render_markdown_file():
+        content = ''
+        if file_path := getattr(settings, 'SWAGGER_API_OVERVIEW', None):
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+        return content
 
 
 class ResourcesView(TastypieApiMixin, SwaggerApiDataMixin, JSONView):
