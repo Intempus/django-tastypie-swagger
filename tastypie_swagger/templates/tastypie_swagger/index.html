@@ -4,6 +4,12 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"> <!-- Important: rapi-doc uses utf8 characters -->
+    <style>
+        /* Hide the div with slot="overview" */
+        div[slot="overview"] {
+            display: none;
+        }
+    </style>
     <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
     <title>Intempus Api</title>
 </head>
@@ -35,35 +41,8 @@
             document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
         });
     });
-
-    // Optionally: Handle navigation when the page loads with an existing URL hash
-    window.addEventListener('load', () => {
-        if (window.location.hash) {
-            const targetId = window.location.hash.slice(1); // Remove the "#" symbol
-            if (targetId !== null){
-                const targetElement = document.getElementById(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: 'smooth' });
-                }
-            }
-        }
-    });
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            if (window.location.hash) {
-                const targetId = window.location.hash.slice(1); // Remove the "#" symbol
-                if (targetId !== null) {
-                    const targetElement = document.getElementById(targetId);
-                    if (targetElement) {
-                        targetElement.scrollIntoView({ behavior: 'smooth' });
-                    }
-                }
-            }
-        }, 500); // Delay the execution by 100 milliseconds
-    });
 </script>
 <script>
-
     function waitForRapiDoc() {
         const checkInterval = setInterval(() => {
             const rapiDocElement = document.querySelector('rapi-doc');
@@ -72,8 +51,29 @@
                 rapiDocElement.addEventListener('before-try', (e) => {
                     addApiKeyToHeader(e);
                 });
+                rapiDocElement.addEventListener('spec-loaded', (e) => {
+                    displayOverview();
+                    scrollView();
+                });
             }
         }, 100);
+    }
+    function scrollView(){
+        if (window.location.hash) {
+            const targetId = window.location.hash.slice(1); // Remove the "#" symbol
+            if (targetId !== null) {
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
+    }
+    function displayOverview(){
+        const overviewDiv = document.querySelector('div[slot="overview"]');
+        if (overviewDiv) {
+            overviewDiv.style.display = 'block';
+        }
     }
     waitForRapiDoc();
     function addApiKeyToHeader(e) {
@@ -85,7 +85,10 @@
             if (!options.headers) {
                 options.headers = {};
             }
-            options.headers['Authorization'] = apiKeyInput.value;
+            if (apiKeyInput.value) {
+                options.headers['Authorization'] = apiKeyInput.value;
+                options.credentials = 'omit';
+            }
             return originalFetch(url, options);
         };
     }
