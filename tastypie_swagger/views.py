@@ -222,6 +222,13 @@ class SwaggerSpecs2View(TastypieApiMixin, JSONView):
             raise Http404
         # Generate mapping from tastypie.resources.Resource.build_schema
         resource = self.tastypie_api._registry.get(resource_name)
+        exclude_from_docs = getattr(
+            resource._meta,
+            'exclude_from_docs',
+            False,
+        )
+        if exclude_from_docs:
+            return context
         mapping = ResourceSwagger2Mapping(resource)
         basePath, apis, defs, tags = mapping.build_apis()
         if context.get('basePath') is None:
