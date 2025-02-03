@@ -120,14 +120,16 @@ class ResourceSwaggerMapping(object):
             raise AttributeError('Resource %(resource)s has neither get_resource_list_uri nor get_resource_uri' % {
                 'resource': self.resource})
 
-    def build_parameter(self, paramType='body', name='', dataType='', required=True, description='',
-                        allowed_values=None):
+    @staticmethod
+    def build_parameter(paramType='body', name='', dataType='', required=True, description='',
+                        allowed_values=None, custom_type=''):
         parameter = {
             'paramType': paramType,
             'name': name,
             'dataType': dataType if dataType is not None else 'unknown',
             'required': required,
             'description': description,
+            'customType': custom_type,
         }
 
         # TODO make use of this to Implement the allowable_values of swagger
@@ -291,7 +293,8 @@ class ResourceSwaggerMapping(object):
         detail_uri_name = getattr(self.resource._meta, "detail_uri_name", "pk")
         return detail_uri_name == "pk" and "id" or detail_uri_name
 
-    def build_parameters_from_extra_action(self, method, fields, resource_type):
+    def build_parameters_from_extra_action(self, method, fields, resource_type,
+                                           custom_type=''):
         parameters = []
         if resource_type == "view":
             parameters.append(self.build_parameter(paramType='path',
@@ -305,6 +308,7 @@ class ResourceSwaggerMapping(object):
                 dataType=field.get("type", "string"),
                 required=field.get("required", True),
                 description=force_text(field.get("description", "")),
+                custom_type=custom_type,
             ))
 
         # For non-standard API functionality, allow the User to declaritively
@@ -318,7 +322,8 @@ class ResourceSwaggerMapping(object):
                     name=name,
                     dataType=field['dataType'],
                     required=field['required'],
-                    description=field['description']
+                    description=field['description'],
+                    custom_type=custom_type,
                 ))
 
         return parameters
@@ -362,8 +367,10 @@ class ResourceSwaggerMapping(object):
                 # Default fields to an empty dictionary in the case that it
                 # is not set.
                 fields=extra_action.get('fields', {}),
-                resource_type=extra_action.get("resource_type", "view")),
-            'responseClass': 'Object',  # TODO this should be extended to allow the creation of a custom object.
+                resource_type=extra_action.get("resource_type", "view"),
+                custom_type=extra_action.get("type", ""),
+            ),
+            'responseClass': extra_action.get('type', 'Object'),
             'nickname': extra_action['name'],
             'notes': extra_action.get('notes', ''),
         }
@@ -414,12 +421,15 @@ class ResourceSwaggerMapping(object):
             identifier = self._detail_uri_name()
             for extra_action in self.resource._meta.extra_actions:
                 extra_api = {
-                    'path': "%s/{%s}/%s/" % (self.get_resource_base_uri(), identifier, extra_action.get('name')),
+                    'path': "%s{%s}/%s/" % (
+                    self.get_resource_base_uri(), identifier,
+                    extra_action.get('name')),
                     'operations': []
                 }
 
                 if extra_action.get("resource_type", "view") == "list":
-                    extra_api['path'] = "%s/%s/" % (self.get_resource_base_uri(), extra_action.get('name'))
+                    extra_api['path'] = "%s%s/" % (
+                    self.get_resource_base_uri(), extra_action.get('name'))
 
                 operation = self.build_extra_operation(extra_action)
                 extra_api['operations'].append(operation)
@@ -582,3 +592,22 @@ class ResourceSwaggerMapping(object):
             )
         )
         return models
+
+    def build_properties_from_custom_fields(self, fields, method='get'):
+        properties = {}
+        for name, field in fields.items():
+            if method in ['post', 'put']:
+                if name in self.WRITE_ACTION_IGNORED_FIELDS:
+                    continue
+                if field.get('readonly'):
+                    continue
+            # Deal with default format
+            field['default'] = field.get('default', None)
+
+            properties.update(self.build_property(
+                name,
+                field.get('type'),
+                force_text(field.get('description', '')),
+            )
+            )
+        return properties

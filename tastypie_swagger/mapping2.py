@@ -1,3 +1,10 @@
+import re
+
+try:
+    from django.utils.encoding import force_text
+except ImportError:
+    from django.utils.encoding import force_str as force_text
+
 from tastypie_swagger.mapping import ResourceSwaggerMapping
 
 SWAGGER_V2_TYPE_MAP = {
@@ -79,8 +86,15 @@ class ResourceSwagger2Mapping(ResourceSwaggerMapping):
         # build tags, paths and operations
         for api in apis:
             uri = api.get('path').replace(common_path, '/')
-            tag_name = uri.replace('/', '').split('{')[0]
-            tag_name = ' '.join([i.title() for i in tag_name.split('_')])
+            matches = re.findall(r'[^/]+', uri)
+            tag_name = ''
+            for match in matches:
+                if '{' in match:
+                    break
+                if '_' in match:
+                    tag_name += ' '.join([i.title() for i in match.split('_')])
+                else:
+                    tag_name += ' ' + match.title()
             tag = {
                 "name": tag_name,
             }
@@ -145,10 +159,17 @@ class ResourceSwagger2Mapping(ResourceSwaggerMapping):
                 'required': in_p.get('required'),
             }
             kind = in_p.get('dataType')
-            if method != 'get' and kind in models:
-                param['schema'] = {
-                    "$ref": self.get_model_ref(kind),
-                }
+            if method != 'get':
+                if kind in models:
+                    param['schema'] = {
+                        "$ref": self.get_model_ref(kind),
+                    }
+                elif in_p.get('customType') in models:
+                    param['schema'] = {
+                        "$ref": self.get_model_ref(in_p.get('customType')),
+                    }
+                else:
+                    param.update(self.get_swagger_type(kind))
             else:
                 param.update(self.get_swagger_type(kind))
             params.append(param)
@@ -225,13 +246,14 @@ class ResourceSwagger2Mapping(ResourceSwaggerMapping):
         if hasattr(self.resource._meta, 'extra_actions'):
             for action in self.resource._meta.extra_actions:
                 http_method = action.get('http_method')
-                resource_name = '%s_%s' % (self.resource._meta.resource_name,
-                                           'Object')
+                resource_name = self.resource._meta.resource_name
                 model_id = '%s_%s' % (self.resource_name, http_method)
                 model = self.build_model(
-                    resource_name=resource_name,
-                    properties=self.build_properties_from_fields(
-                        method=http_method),
+                    resource_name=f'{resource_name}_{action.get("name").strip()}',
+                    properties=self.build_properties_from_custom_fields(
+                        fields=action.get('fields'),
+                        method=http_method,
+                    ),
                     id=model_id,
                 )
                 models.update(model)
