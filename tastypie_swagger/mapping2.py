@@ -105,6 +105,10 @@ class ResourceSwagger2Mapping(ResourceSwaggerMapping):
             for op in api.get('operations'):
                 responseCls = op.get('responseClass')
                 method = op.get('httpMethod').lower()
+                examples = op.get('examples', {})
+                schema = None
+                if not examples:
+                    schema = {"$ref": self.get_model_ref(responseCls)}
                 path[method] = {
                     "summary": op.get('summary'),
                     # -- note "tags" is optional, yet sphinx-swagger
@@ -114,9 +118,8 @@ class ResourceSwagger2Mapping(ResourceSwaggerMapping):
                     "responses": {
                         "200": {
                             "description": "%s object" % responseCls,
-                            "schema": {
-                                "$ref": self.get_model_ref(responseCls),
-                            }
+                            "schema": schema,
+                            "examples": examples,
                         }
                     }
                 }
