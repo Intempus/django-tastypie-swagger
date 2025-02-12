@@ -373,6 +373,7 @@ class ResourceSwaggerMapping(object):
             'responseClass': extra_action.get('type', 'Object'),
             'nickname': extra_action['name'],
             'notes': extra_action.get('notes', ''),
+            'examples': extra_action.get('examples'),
         }
 
     def build_detail_api(self):
