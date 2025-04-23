@@ -76,6 +76,12 @@
         }
     }
     waitForRapiDoc();
+    // Helper function to extract cookie value
+    function getCookie(name) {
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : null;
+    }
+
     function addApiKeyToHeader(e) {
         const rapiDocElement = document.querySelector('rapi-doc');
         const shadowRoot = rapiDocElement.shadowRoot;
@@ -83,11 +89,13 @@
         const originalFetch = window.fetch;
         window.fetch = async (url, options = {}) => {
             if (!options.headers) {
-                options.headers = {};
+                options.headers = {'Content-Type': 'application/json'};
             }
             if (apiKeyInput.value) {
                 options.headers['Authorization'] = apiKeyInput.value;
                 options.credentials = 'omit';
+            }else{
+                options.headers['X-CSRFToken'] = getCookie('csrftoken');
             }
             return originalFetch(url, options);
         };
