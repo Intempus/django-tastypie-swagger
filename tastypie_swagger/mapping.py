@@ -361,7 +361,7 @@ class ResourceSwaggerMapping(object):
             raise LookupError("\"name\" is a required field in extra_actions.")
         resource_type = extra_action.get("resource_type", "view")
         if resource_type == "list_view":
-            resource_type = "list"
+            resource_type = "view"
         return {
             'summary': extra_action.get("summary", ""),
             'httpMethod': extra_action.get('http_method', "get").upper(),
