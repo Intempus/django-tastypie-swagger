@@ -296,7 +296,7 @@ class ResourceSwaggerMapping(object):
     def build_parameters_from_extra_action(self, method, fields, resource_type,
                                            custom_type=''):
         parameters = []
-        if resource_type == "view":
+        if resource_type in ["view", "list_view"]:
             parameters.append(self.build_parameter(paramType='path',
                                                    name=self._detail_uri_name(),
                                                    dataType=self.resource_pk_type,
@@ -359,6 +359,9 @@ class ResourceSwaggerMapping(object):
     def build_extra_operation(self, extra_action):
         if "name" not in extra_action:
             raise LookupError("\"name\" is a required field in extra_actions.")
+        resource_type = extra_action.get("resource_type", "view")
+        if resource_type == "list_view":
+            resource_type = "list"
         return {
             'summary': extra_action.get("summary", ""),
             'httpMethod': extra_action.get('http_method', "get").upper(),
@@ -367,7 +370,7 @@ class ResourceSwaggerMapping(object):
                 # Default fields to an empty dictionary in the case that it
                 # is not set.
                 fields=extra_action.get('fields', {}),
-                resource_type=extra_action.get("resource_type", "view"),
+                resource_type=resource_type,
                 custom_type=extra_action.get("type", ""),
             ),
             'responseClass': extra_action.get('type', 'Object'),
