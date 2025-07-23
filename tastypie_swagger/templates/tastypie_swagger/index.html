@@ -89,7 +89,10 @@
         const originalFetch = window.fetch;
         window.fetch = async (url, options = {}) => {
             if (!options.headers) {
-                options.headers = {'Content-Type': 'application/json'};
+                options.headers = {
+                    'Content-Type': 'application/json',
+                    'Error-Message-Version': '1.0.0',
+                };
             }
             if (apiKeyInput.value) {
                 options.headers['Authorization'] = apiKeyInput.value;
