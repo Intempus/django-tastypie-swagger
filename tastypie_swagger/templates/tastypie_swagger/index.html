@@ -91,7 +91,7 @@
             if (!options.headers) {
                 options.headers = {
                     'Content-Type': 'application/json',
-                    'Error-Message-Version': '1.0.0',
+                    'Error-Message-Version': '{{ error_version }}',
                 };
             }
             if (apiKeyInput.value) {

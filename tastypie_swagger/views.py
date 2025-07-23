@@ -102,10 +102,12 @@ class SwaggerView(TastypieApiMixin, TemplateView):
         basePath = (self.request
                     .build_absolute_uri(reverse(f'{namespace}:index'))
                     .rstrip('/'))
+        security_definition = getattr(settings, 'SWAGGER_SECURITY_DEFINITION', {})
         context.update({
             'discovery_url': f'{basePath}/resources',
             'swagger_url': f'{basePath}/specs/swagger.json',
             'api_overview': self._render_markdown_file(),
+            'error_version': security_definition.get('error_version', '1.0.0'),
         })
         return context
 
