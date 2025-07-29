@@ -202,12 +202,12 @@ class ResourceSwagger2Mapping(ResourceSwaggerMapping):
                     prop['$ref'] = self.get_model_ref(ref)
                 for key, subprop in prop.items():
                     recurse(subprop)
-            # if a type is referenced remove 'type' and 'descriptions'
-            # to avoid warning 'other properties are defined at level ...'
-            # see https://github.com/go-swagger/go-swagger/issues/901
-            if '$ref' in prop and 'type' in prop:
-                del prop['type']
-                del prop['description']
+                # if a type is referenced remove 'type' and 'descriptions'
+                # to avoid warning 'other properties are defined at level ...'
+                # see https://github.com/go-swagger/go-swagger/issues/901
+                if '$ref' in prop and 'type' in prop:
+                    del prop['type']
+                    del prop['description']
 
         recurse(props)
 

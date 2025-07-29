@@ -445,13 +445,26 @@ class ResourceSwaggerMapping(object):
         apis.extend(self.build_extra_apis())
         return apis
 
-    def build_property(self, name, type, description=""):
+    def build_property(
+        self,
+        name,
+        type,
+        description="",
+        properties=None,
+        items=None,
+    ):
         prop = {
             name: {
                 'type': type,
                 'description': description,
             }
         }
+
+        if type.lower() == 'object' and properties is not None:
+            prop[name]['properties'] = properties
+
+        if type.lower() == 'array' and items is not None:
+            prop[name]['items'] = items
 
         if type == 'List':
             prop[name]['items'] = {'$ref': name}
@@ -612,6 +625,7 @@ class ResourceSwaggerMapping(object):
                 name,
                 field.get('type'),
                 force_text(field.get('description', '')),
-            )
-            )
+                properties=field.get('properties', None),
+                items=field.get('items', None),
+            ))
         return properties
