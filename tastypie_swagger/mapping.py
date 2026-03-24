@@ -27,6 +27,12 @@ ALL = 1
 # Enable all ORM filters, including across relationships
 ALL_WITH_RELATIONS = 2
 
+METHOD_TO_PARAM_TYPE = {
+    "GET": "query",
+    "POST": "body",
+    "PATCH": "body",
+}
+
 
 class ResourceSwaggerMapping(object):
     """
@@ -302,8 +308,9 @@ class ResourceSwaggerMapping(object):
                                                    dataType=self.resource_pk_type,
                                                    description='Primary key of resource'))
         for name, field in fields.items():
+            param_type = METHOD_TO_PARAM_TYPE.get(method, "query")
             parameters.append(self.build_parameter(
-                paramType=field.get("param_type", "query"),
+                paramType=field.get("param_type", param_type),
                 name=name,
                 dataType=field.get("type", "string"),
                 required=field.get("required", True),
@@ -613,10 +620,12 @@ class ResourceSwaggerMapping(object):
     def build_properties_from_custom_fields(self, fields, method='get'):
         properties = {}
         for name, field in fields.items():
-            if method in ['post', 'put']:
+            if method.lower() in ['post', 'put']:
                 if name in self.WRITE_ACTION_IGNORED_FIELDS:
                     continue
                 if field.get('readonly'):
+                    continue
+                if field.get("param_type") == "query":
                     continue
             # Deal with default format
             field['default'] = field.get('default', None)

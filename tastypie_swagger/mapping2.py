@@ -156,13 +156,14 @@ class ResourceSwagger2Mapping(ResourceSwaggerMapping):
             name = in_p.get('name')
             if '{%s}' % name.strip() in path:
                 param_in = 'path'
+            param_in = in_p.get("paramType", param_in)
             param = {
                 'name': name,
                 'in': param_in,
                 'required': in_p.get('required'),
             }
             kind = in_p.get('dataType')
-            if method != 'get':
+            if method != "get" and param_in != "query":
                 if kind in models:
                     param['schema'] = {
                         "$ref": self.get_model_ref(kind),
