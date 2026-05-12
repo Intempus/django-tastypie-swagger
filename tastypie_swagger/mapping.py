@@ -523,7 +523,7 @@ class ResourceSwaggerMapping(object):
             'id': id
         }
 
-        if required_properties is not None:
+        if required_properties:
             resource['required'] = required_properties
 
         return {resource_name: resource}
