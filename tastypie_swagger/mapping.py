@@ -480,6 +480,7 @@ class ResourceSwaggerMapping(object):
 
     def build_properties_from_fields(self, method='get'):
         properties = {}
+        required = []
         excludes = getattr(self.resource._meta, 'excludes', [])
         for name, field in self.schema['fields'].items():
             if name in excludes:
@@ -504,15 +505,28 @@ class ResourceSwaggerMapping(object):
                 force_text(field.get('help_text', '')),
             )
             )
-        return properties
 
-    def build_model(self, resource_name, id, properties):
-        return {
-            resource_name: {
-                'properties': properties,
-                'id': id
-            }
+            # A field is required if it cannot be null, cannot be blank,
+            # and has no fallback default value.
+            if method in ['post', 'put']:
+                has_default = field.get('default') is not None
+                is_nullable = field.get('nullable', False)
+                is_blank = field.get('blank', False)
+                if not is_nullable and not is_blank and not has_default:
+                    required.append(name)
+
+        return properties, required
+
+    def build_model(self, resource_name, id, properties, required_properties=None):
+        resource = {
+            'properties': properties,
+            'id': id
         }
+
+        if required_properties:
+            resource['required'] = required_properties
+
+        return {resource_name: resource}
 
     def build_list_models_and_properties(self):
         models = {}
@@ -590,19 +604,23 @@ class ResourceSwaggerMapping(object):
             models.update(self.build_list_models_and_properties())
 
         if 'post' in self.resource._meta.list_allowed_methods:
+            properties, required_properties = self.build_properties_from_fields(method='post')
             models.update(
                 self.build_model(
                     resource_name='%s_post' % self.resource._meta.resource_name,
-                    properties=self.build_properties_from_fields(method='post'),
+                    properties=properties,
+                    required_properties=required_properties,
                     id='%s_post' % self.resource_name
                 )
             )
 
         if 'put' in self.resource._meta.detail_allowed_methods:
+            properties, required_properties = self.build_properties_from_fields(method='put')
             models.update(
                 self.build_model(
                     resource_name='%s_put' % self.resource._meta.resource_name,
-                    properties=self.build_properties_from_fields(method='put'),
+                    properties=properties,
+                    required_properties=required_properties,
                     id='%s_put' % self.resource_name
                 )
             )
@@ -611,7 +629,7 @@ class ResourceSwaggerMapping(object):
         models.update(
             self.build_model(
                 resource_name=self.resource._meta.resource_name,
-                properties=self.build_properties_from_fields(),
+                properties=self.build_properties_from_fields()[0],
                 id=self.resource_name
             )
         )
