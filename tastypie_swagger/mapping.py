@@ -517,13 +517,16 @@ class ResourceSwaggerMapping(object):
 
         return properties, required
 
-    def build_model(self, resource_name, id, properties):
-        return {
-            resource_name: {
-                'properties': properties,
-                'id': id
-            }
+    def build_model(self, resource_name, id, properties, required_properties=None):
+        resource = {
+            'properties': properties,
+            'id': id
         }
+
+        if required_properties is not None:
+            resource['required'] = required_properties
+
+        return {resource_name: resource}
 
     def build_list_models_and_properties(self):
         models = {}
@@ -606,6 +609,7 @@ class ResourceSwaggerMapping(object):
                 self.build_model(
                     resource_name='%s_post' % self.resource._meta.resource_name,
                     properties=properties,
+                    required_properties=required_properties,
                     id='%s_post' % self.resource_name
                 )
             )
@@ -616,6 +620,7 @@ class ResourceSwaggerMapping(object):
                 self.build_model(
                     resource_name='%s_put' % self.resource._meta.resource_name,
                     properties=properties,
+                    required_properties=required_properties,
                     id='%s_put' % self.resource_name
                 )
             )
