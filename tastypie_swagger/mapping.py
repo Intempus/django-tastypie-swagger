@@ -51,6 +51,7 @@ class ResourceSwaggerMapping(object):
         'get-list': "Retrieve a list of %s",
         'post-list': "Create a new %s",
         'put-detail': "Update an existing %s",
+        'patch-detail': "Partially update an existing %s",
         'delete-detail': "Delete an existing %s",
     }
 
@@ -403,6 +404,11 @@ class ResourceSwaggerMapping(object):
             operation['parameters'].append(self.build_parameter_for_object(method='put'))
             detail_api['operations'].append(operation)
 
+        if 'patch' in self.schema['allowed_detail_http_methods']:
+            operation = self.build_detail_operation(method='patch')
+            operation['parameters'].append(self.build_parameter_for_object(method='patch'))
+            detail_api['operations'].append(operation)
+
         if 'delete' in self.schema['allowed_detail_http_methods']:
             detail_api['operations'].append(self.build_detail_operation(method='delete'))
 
@@ -485,8 +491,8 @@ class ResourceSwaggerMapping(object):
         for name, field in self.schema['fields'].items():
             if name in excludes:
                 continue
-            # Exclude fields from custom put / post object definition
-            if method in ['post', 'put']:
+            # Exclude fields from custom put / post / patch object definition
+            if method in ['post', 'put', 'patch']:
                 if name in self.WRITE_ACTION_IGNORED_FIELDS:
                     continue
                 if field.get('readonly'):
@@ -507,7 +513,8 @@ class ResourceSwaggerMapping(object):
             )
 
             # A field is required if it cannot be null, cannot be blank,
-            # and has no fallback default value.
+            # and has no fallback default value. PATCH performs a partial
+            # update, so no field is ever required for it.
             if method in ['post', 'put']:
                 has_default = field.get('default') is not None
                 is_nullable = field.get('nullable', False)
@@ -622,6 +629,17 @@ class ResourceSwaggerMapping(object):
                     properties=properties,
                     required_properties=required_properties,
                     id='%s_put' % self.resource_name
+                )
+            )
+
+        if 'patch' in self.resource._meta.detail_allowed_methods:
+            properties, required_properties = self.build_properties_from_fields(method='patch')
+            models.update(
+                self.build_model(
+                    resource_name='%s_patch' % self.resource._meta.resource_name,
+                    properties=properties,
+                    required_properties=required_properties,
+                    id='%s_patch' % self.resource_name
                 )
             )
 
